@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenCode LINE Bot - 建置報告</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans TC', sans-serif; background: #0f0f1a; color: #e0e0e0; }
+  .slide { min-height: 100vh; padding: 60px; display: flex; flex-direction: column; justify-content: center; border-bottom: 1px solid #1e1e3a; position: relative; }
+  .slide:nth-child(odd) { background: #0f0f1a; }
+  .slide:nth-child(even) { background: #15152a; }
+  h1 { font-size: 3.5em; font-weight: 900; background: linear-gradient(135deg, #00d4ff, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
+  h2 { font-size: 2.2em; color: #00d4ff; margin-bottom: 30px; border-left: 5px solid #7b2ff7; padding-left: 20px; }
+  h3 { font-size: 1.4em; color: #a78bfa; margin: 20px 0 10px; }
+  p, li { font-size: 1.1em; line-height: 1.8; color: #c0c0d0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
+  .card { background: #1a1a35; border: 1px solid #2a2a50; border-radius: 12px; padding: 25px; transition: .3s; }
+  .card:hover { border-color: #7b2ff7; transform: translateY(-3px); }
+  .card h3 { margin-top: 0; }
+  .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: .8em; font-weight: 700; }
+  .tag-free { background: #065f46; color: #6ee7b7; }
+  .tag-req { background: #7f1d1d; color: #fca5a5; }
+  .tag-opt { background: #1e3a5f; color: #93c5fd; }
+  code { background: #252550; padding: 2px 8px; border-radius: 4px; font-size: .9em; color: #a5f3fc; }
+  pre { background: #0d0d1a; border: 1px solid #2a2a50; border-radius: 8px; padding: 20px; overflow-x: auto; margin: 15px 0; font-size: .95em; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: .95em; }
+  th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #2a2a50; }
+  th { background: #1a1a35; color: #00d4ff; font-weight: 700; }
+  tr:hover { background: #1e1e3a; }
+  .cover { text-align: center; }
+  .cover h1 { font-size: 4em; margin-bottom: 10px; }
+  .cover .sub { font-size: 1.4em; color: #8888aa; margin-bottom: 30px; }
+  .cover .meta { color: #666; font-size: .9em; }
+  .badge { display: inline-block; background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: #fff; padding: 8px 20px; border-radius: 30px; font-weight: 700; font-size: .9em; margin-top: 30px; }
+  .arrow { text-align: center; margin: 20px 0; font-size: 2em; color: #7b2ff7; }
+  ul, ol { padding-left: 25px; }
+  ul li, ol li { margin: 8px 0; }
+  .steps { counter-reset: step; }
+  .steps li { list-style: none; position: relative; padding-left: 45px; margin: 20px 0; }
+  .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; background: #7b2ff7; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9em; }
+  .section-label { position: absolute; top: 20px; right: 30px; color: #555; font-size: .8em; letter-spacing: 2px; }
+  @media (max-width: 768px) {
+    .slide { padding: 30px; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    .grid { grid-template-columns: 1fr; }
+    .cover h1 { font-size: 2.5em; }
+  }
+  .diagram { background: #0d0d1a; border: 1px solid #2a2a50; border-radius: 12px; padding: 30px; text-align: center; font-family: monospace; line-height: 2.2; margin: 20px 0; font-size: 1em; }
+  .diagram .hl { color: #00d4ff; font-weight: 700; }
+  .diagram .hl2 { color: #a78bfa; font-weight: 700; }
+  .diagram .arrow-sym { color: #7b2ff7; }
+</style>
+</head>
+<body>
+
+<!-- ==================== COVER ==================== -->
+<div class="slide cover">
+  <div class="section-label">REPORT v1.0</div>
+  <h1>OpenCode LINE Bot</h1>
+  <div class="sub">LINE Messaging API × AI Coding Agent 整合建置報告</div>
+  <div class="badge">2026.06.20</div>
+  <div class="meta" style="margin-top:60px">waiaoinfo-create</div>
+</div>
+
+<!-- ==================== AGENDA ==================== -->
+<div class="slide">
+  <div class="section-label">CONTENTS</div>
+  <h2>📋 目錄</h2>
+  <div class="grid">
+    <div class="card"><h3>1</h3><p>專案概述</p></div>
+    <div class="card"><h3>2</h3><p>系統架構</p></div>
+    <div class="card"><h3>3</h3><p>技術棧</p></div>
+    <div class="card"><h3>4</h3><p>前置準備</p></div>
+    <div class="card"><h3>5</h3><p>建置步驟</p></div>
+    <div class="card"><h3>6</h3><p>服務說明</p></div>
+    <div class="card"><h3>7</h3><p>LINE Bot 功能</p></div>
+    <div class="card"><h3>8</h3><p>AI 模型一覽</p></div>
+    <div class="card"><h3>9</h3><p>操作指南</p></div>
+    <div class="card"><h3>10</h3><p>常見問題</p></div>
+  </div>
+</div>
+
+<!-- ==================== 1. OVERVIEW ==================== -->
+<div class="slide">
+  <div class="section-label">01</div>
+  <h2>專案概述</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🎯 目的</h3>
+      <p>將 OpenCode AI 程式碼助理與 LINE Messaging API 整合，讓使用者透過 LINE 官方帳號以聊天方式與 AI 互動。</p>
+    </div>
+    <div class="card">
+      <h3>👥 適用對象</h3>
+      <p>需要在手機上隨時使用 AI 輔助的開發者、想在 LINE 群組中整合 AI 助理的團隊、對 AI 聊天機器人有興趣的使用者。</p>
+    </div>
+  </div>
+  <h3 style="margin-top:20px">✨ 主要功能</h3>
+  <table>
+    <tr><th>功能</th><th>說明</th></tr>
+    <tr><td>多輪對話</td><td>支援連續對話，保留上下文記憶</td></tr>
+    <tr><td>模型切換</td><td>可自由切換不同 AI 模型（Anthropic / OpenAI / Google 等）</td></tr>
+    <tr><td>群組聊天</td><td>支援 LINE 群組，AI 自動判斷是否回應</td></tr>
+    <tr><td>免費方案</td><td>內建 Big Pickle 模型，零成本即可使用</td></tr>
+    <tr><td>使用者記憶</td><td>自動記錄使用者名稱與對話歷史</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 2. ARCHITECTURE ==================== -->
+<div class="slide">
+  <div class="section-label">02</div>
+  <h2>系統架構</h2>
+  <div class="diagram">
+    <span class="hl">LINE App</span><br>
+    <span class="arrow-sym">│</span><br>
+    <span class="arrow-sym">▼</span><br>
+    <span class="hl">LINE Platform</span> ── Webhook (POST /webhook)<br>
+    <span class="arrow-sym">│</span><br>
+    <span class="arrow-sym">▼</span><br>
+    <span class="hl2">ngrok Tunnel</span> ── localhost:3000 → https://xxx.ngrok-free.app<br>
+    <span class="arrow-sym">│</span><br>
+    <span class="arrow-sym">▼</span><br>
+    <span class="hl">line-bot (Bun) :3000</span><br>
+    <span class="arrow-sym">│</span><br>
+    <span class="arrow-sym">▼</span><br>
+    <span class="hl">OpenCode Server :4096</span><br>
+    <span class="arrow-sym">│</span><br>
+    <span class="arrow-sym">▼</span><br>
+    <span class="hl2">AI Model</span> ── Claude / GPT / Gemini / Big Pickle<br>
+    <span style="color:#555">↕ MCP Tools (optional)</span>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>📤 請求流</h3><p>LINE → Webhook → ngrok → line-bot → OpenCode → AI Model</p></div>
+    <div class="card"><h3>📥 回應流</h3><p>AI Model → OpenCode → line-bot → replyMessage → LINE App</p></div>
+  </div>
+</div>
+
+<!-- ==================== 3. TECH STACK ==================== -->
+<div class="slide">
+  <div class="section-label">03</div>
+  <h2>技術棧</h2>
+  <div class="grid">
+    <div class="card"><h3>🟢 LINE Bot</h3><p>Bun + TypeScript<br>LINE SDK v9<br>Port 3000</p></div>
+    <div class="card"><h3>🔵 AI 引擎</h3><p>OpenCode Server<br>Alpine Linux<br>Port 4096</p></div>
+    <div class="card"><h3>🐳 容器化</h3><p>Docker + Docker Compose<br>3 個服務容器<br>2 個持久化 Volume</p></div>
+    <div class="card"><h3>🌐 隧道</h3><p>ngrok 3.x<br>公開 HTTPS 網址<br>免靜態 IP</p></div>
+  </div>
+  <table>
+    <tr><th>容器</th><th>映像</th><th>連接埠</th></tr>
+    <tr><td>opencode-server</td><td>ghcr.io/anomalyco/opencode:latest</td><td>:4096</td></tr>
+    <tr><td>opencode-line-bot</td><td>oven/bun:1</td><td>:3000</td></tr>
+    <tr><td>opencode-line-ngrok</td><td>ngrok/ngrok:latest</td><td>動態</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 4. PREREQUISITES ==================== -->
+<div class="slide">
+  <div class="section-label">04</div>
+  <h2>前置準備</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🔑 LINE 憑證 <span class="tag tag-req">必要</span></h3>
+      <ol style="margin-top:10px">
+        <li>前往 <a href="https://developers.line.biz/console/" style="color:#00d4ff">LINE Developers Console</a></li>
+        <li>建立 Provider</li>
+        <li>建立 Messaging API Channel</li>
+        <li>取得 Channel Secret + Access Token</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>🤖 AI 金鑰 <span class="tag tag-req">擇一</span></h3>
+      <table style="font-size:.85em">
+        <tr><th>服務</th><th>費用</th></tr>
+        <tr><td>Big Pickle</td><td><span class="tag tag-free">免費</span></td></tr>
+        <tr><td>Claude Haiku</td><td>$</td></tr>
+        <tr><td>Claude Sonnet</td><td>$$</td></tr>
+        <tr><td>GPT-5 Mini</td><td>$</td></tr>
+        <tr><td>Gemini Flash</td><td>$</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>🌐 ngrok <span class="tag tag-opt">建議</span></h3>
+      <p>註冊 ngrok.com 取得 Authtoken，讓 Tunnel 網址固定不變</p>
+    </div>
+    <div class="card">
+      <h3>💻 本機環境</h3>
+      <p>Docker Desktop（已安裝）<br>ngrok（已安裝）<br>Git（已安裝）</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 5. SETUP STEPS ==================== -->
+<div class="slide">
+  <div class="section-label">05</div>
+  <h2>建置步驟</h2>
+  <ol class="steps">
+    <li><strong>設定環境變數</strong><br>建立 <code>.env</code> 檔，填入 LINE 憑證與 AI 金鑰</li>
+    <li><strong>啟動 Docker 服務</strong><br><pre>docker compose up -d --build</pre></li>
+    <li><strong>取得 ngrok 網址</strong><br><pre>docker logs opencode-line-ngrok</pre>看到 <code>https://xxxx.ngrok-free.app</code></li>
+    <li><strong>設定 LINE Webhook</strong><br>到 LINE Developers Console → Messaging API → Webhook URL 填入 <code>https://你的ngrok網址/webhook</code> → 啟用 → Verify</li>
+    <li><strong>驗證</strong><br>傳送訊息給 LINE 官方帳號，確認收到 AI 回覆</li>
+  </ol>
+</div>
+
+<!-- ==================== 6. SERVICES ==================== -->
+<div class="slide">
+  <div class="section-label">06</div>
+  <h2>服務說明</h2>
+  <table>
+    <tr><th>服務</th><th>說明</th><th>重新啟動</th></tr>
+    <tr><td>opencode-server</td><td>OpenCode AI 引擎，負責與 AI 模型溝通</td><td>unless-stopped</td></tr>
+    <tr><td>opencode-line-bot</td><td>LINE Webhook 處理器，解析訊息並呼叫 OpenCode API</td><td>unless-stopped</td></tr>
+    <tr><td>opencode-line-ngrok</td><td>公開隧道，將本機服務曝露到網際網路</td><td>unless-stopped</td></tr>
+  </table>
+  <h3>📦 Docker Volumes</h3>
+  <table>
+    <tr><th>Volume</th><th>掛載點</th><th>用途</th></tr>
+    <tr><td>opencode-data</td><td>/root/.local/share/opencode</td><td>auth.json（API 金鑰）</td></tr>
+    <tr><td>opencode-state</td><td>/root/.local/state/opencode</td><td>model.json（預設模型）</td></tr>
+  </table>
+  <div class="grid" style="margin-top:20px">
+    <div class="card">
+      <h3>📋 常用指令</h3>
+      <pre>docker compose up -d --build
+docker compose down
+docker logs opencode-line-bot -f
+docker logs opencode-line-ngrok</pre>
+    </div>
+    <div class="card">
+      <h3>🔄 更新服務</h3>
+      <pre>docker compose pull
+docker compose up -d
+# 或重新建置
+docker compose up -d --build</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 7. LINE BOT FEATURES ==================== -->
+<div class="slide">
+  <div class="section-label">07</div>
+  <h2>LINE Bot 功能</h2>
+  <table>
+    <tr><th>指令</th><th>別名</th><th>功能</th></tr>
+    <tr><td>/new</td><td>-</td><td>開始新對話</td></tr>
+    <tr><td>/abort</td><td>-</td><td>取消進行中的請求</td></tr>
+    <tr><td>/sessions</td><td>-</td><td>查看對話狀態</td></tr>
+    <tr><td>/model</td><td>/model &lt;name&gt;</td><td>查看/切換 AI 模型</td></tr>
+    <tr><td>/about</td><td>/who</td><td>Bot 自我介紹</td></tr>
+    <tr><td>/help</td><td>/คำสั่ง</td><td>顯示所有指令</td></tr>
+    <tr><td>/playground</td><td>/pg</td><td>Playground 資訊</td></tr>
+    <tr><td>/meditation</td><td>/jibjib</td><td>JIBJIB Meditation</td></tr>
+  </table>
+  <div class="grid" style="margin-top:20px">
+    <div class="card">
+      <h3>👥 群組聊天</h3>
+      <p>同群組共用 session，AI 自動判斷是否回應（SKIP 機制），不需 @bot</p>
+    </div>
+    <div class="card">
+      <h3>🧠 使用者上下文</h3>
+      <p>每次 prompt 自動包含：LINE 顯示名稱、訊息計數、曼谷時區時間、引用回覆</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 8. AI MODELS ==================== -->
+<div class="slide">
+  <div class="section-label">08</div>
+  <h2>AI 模型一覽</h2>
+  <table>
+    <tr><th>LINE 指令</th><th>模型</th><th>供應商</th><th>費用</th><th>適合</th></tr>
+    <tr><td>/model pickle</td><td>Big Pickle</td><td>opencode</td><td><span class="tag tag-free">免費</span></td><td>日常對話</td></tr>
+    <tr><td>/model haiku</td><td>Claude Haiku 4.5</td><td>anthropic</td><td>$</td><td>快速問答</td></tr>
+    <tr><td>/model sonnet</td><td>Claude Sonnet 4.6</td><td>anthropic</td><td>$$</td><td>程式碼</td></tr>
+    <tr><td>/model opus</td><td>Claude Opus 4.6</td><td>anthropic</td><td>$$$</td><td>高難度</td></tr>
+    <tr><td>/model deepseek</td><td>DeepSeek Chat</td><td>deepseek</td><td>$</td><td>中文</td></tr>
+    <tr><td>/model gpt5mini</td><td>GPT-5 Mini</td><td>openai</td><td>$</td><td>輕量</td></tr>
+    <tr><td>/model gpt5</td><td>GPT-5.2</td><td>openai</td><td>$$</td><td>一般</td></tr>
+    <tr><td>/model geminiflash</td><td>Gemini 3 Flash</td><td>google</td><td>$</td><td>快速</td></tr>
+    <tr><td>/model gemini</td><td>Gemini 3 Pro</td><td>google</td><td>$</td><td>一般</td></tr>
+  </table>
+  <p style="margin-top:15px; color:#888">💡 預設模型：Big Pickle（免費），可隨時切換。設定儲存於各 session。</p>
+</div>
+
+<!-- ==================== 9. USAGE GUIDE ==================== -->
+<div class="slide">
+  <div class="section-label">09</div>
+  <h2>操作指南</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>💬 一般對話</h3>
+      <pre style="font-size:.85em">你：幫我寫一個 Python 計算機程式
+Bot：好的，以下是簡單的計算機程式...</pre>
+    </div>
+    <div class="card">
+      <h3>🔄 切換模型</h3>
+      <pre style="font-size:.85em">你：/model sonnet
+Bot：已切換到 Claude Sonnet 4.6</pre>
+    </div>
+    <div class="card">
+      <h3>🆕 新對話</h3>
+      <pre style="font-size:.85em">你：/new
+Bot：已開始新對話！</pre>
+    </div>
+    <div class="card">
+      <h3>📊 查看狀態</h3>
+      <pre style="font-size:.85em">你：/sessions
+Bot：目前有 3 個 active session</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 10. FAQ ==================== -->
+<div class="slide">
+  <div class="section-label">10</div>
+  <h2>常見問題</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>❓ 收不到 Bot 回覆？</h3>
+      <p>1. 檢查 ngrok 日誌 <code>docker logs opencode-line-ngrok</code><br>
+         2. 確認 LINE Webhook 設定正確<br>
+         3. 檢查 Bot 日誌 <code>docker logs opencode-line-bot</code></p>
+    </div>
+    <div class="card">
+      <h3>❓ ngrok URL 變了？</h3>
+      <p>每次重啟 URL 都會變。建議註冊 ngrok 帳號並設定 Authtoken，網址就會固定。變更後需更新 LINE Webhook。</p>
+    </div>
+    <div class="card">
+      <h3>❓ Docker 無法啟動？</h3>
+      <p><code>docker info</code> 檢查 Docker 狀態。<br>
+         <code>docker compose down; docker compose up -d --build</code> 重新啟動。</p>
+    </div>
+    <div class="card">
+      <h3>❓ 重啟後對話不見？</h3>
+      <p>Session 儲存在記憶體中，重啟後會自動建立新 session，傳送訊息即可繼續使用。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== END ==================== -->
+<div class="slide cover">
+  <h1>Thanks</h1>
+  <div class="sub">OpenCode LINE Bot Integration Report</div>
+  <div style="margin-top:40px; color:#666; font-size:.85em">
+    <p>原始專案：<a href="https://github.com/monthop-gmail/opencode-line" style="color:#00d4ff">github.com/monthop-gmail/opencode-line</a></p>
+    <p>OpenCode 官網：<a href="https://opencode.ai" style="color:#00d4ff">opencode.ai</a></p>
+    <p style="margin-top:30px; color:#444">Generated by OpenCode AI · 2026</p>
+  </div>
+</div>
+
+</body>
+</html>
