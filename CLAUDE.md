@@ -124,3 +124,8 @@ Referenced in `/meditation` command and web `/about` page. Meditation DApp for e
 - `workspace/` directory is not tracked in git — it's team's working data mounted into the container.
 - After container recreate, sessions are lost (in-memory Map) — users just need to send a new message to create a fresh session.
 - LINE replyToken expires quickly — if bot takes too long to respond, replyMessage will fail and fall back to pushMessage (uses quota).
+
+## User Preferences
+
+- **報告/簡報格式**: 使用者要的是 **GitHub Pages 連結 + 方向鍵翻頁的 slide 簡報**（如 reveal.js 風格），不是 Markdown 或 HTML 檔案。直接給 `https://waiaoinfo-create.github.io/{repo}/` 這樣的連結，不要給檔案路徑。
+- **GitHub 操作**: 建立新分支後要 push 到 GitHub 並給連結，不是只存在本機。
