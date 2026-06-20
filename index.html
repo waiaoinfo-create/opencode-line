@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenCode LINE Bot — 整合建置報告</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Noto Sans TC','Microsoft JhengHei',system-ui,sans-serif;overflow:hidden;width:100vw;height:100dvh;background:#111;color:#222}
+.slide{display:none;width:100%;height:100dvh;overflow-y:auto;position:relative;padding:5vh 6vw 4vh;background:#faf9f6}
+.slide.active{display:flex;flex-direction:column;justify-content:center;align-items:center}
+.s-inner{max-width:1100px;width:100%;margin:0 auto;padding:0}
+.s-head{text-align:center;margin-bottom:clamp(8px,1.5vh,18px)}
+.s-head h2{font-size:clamp(1.5rem,3vw,2.4rem);color:#0d3880;margin-bottom:4px;line-height:1.2}
+.s-head p{font-size:clamp(.85rem,1.4vw,1.05rem);color:#666;margin-top:-2px}
+.s-num{position:absolute;top:2vh;right:4vw;font-size:clamp(1.8rem,4vw,3.2rem);font-weight:800;color:#4a7dff;opacity:.15;letter-spacing:2px;z-index:0;pointer-events:none;line-height:1}
+.s-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1vw,14px);margin:clamp(4px,1vh,12px) 0}
+.ss{text-align:center;padding:clamp(4px,1vh,10px) clamp(10px,1.5vw,20px);background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);min-width:80px;flex:1 0 auto;max-width:150px}
+.ss-n{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:700;color:#0d3880;display:block}
+.ss-l{font-size:clamp(.65rem,1vw,.78rem);color:#555;display:block;margin-top:2px}
+.ss.gold-b .ss-n{color:#b8860b}
+.s-grid2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.2vw,16px);margin-top:clamp(4px,.8vh,10px)}
+.s-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(6px,1.2vw,16px);margin-top:clamp(4px,.8vh,10px)}
+.s-grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:clamp(6px,1vw,14px);margin-top:clamp(4px,.8vh,10px)}
+.s-grid6{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(6px,1vw,14px);margin-top:clamp(4px,.8vh,10px)}
+.scard{background:#fff;border-radius:12px;padding:clamp(8px,1.2vh,16px);box-shadow:0 2px 8px rgba(0,0,0,.06);border-top:3px solid #3a6dd4;font-size:clamp(.75rem,1.15vw,.88rem);line-height:1.5}
+.scard h3{margin-bottom:4px;font-size:clamp(.85rem,1.2vw,.95rem)}
+.scard h4{margin-bottom:4px}
+.scard ul{margin:4px 0 0 16px;padding:0}
+.scard li{margin-bottom:2px;line-height:1.4}
+.sci{font-size:clamp(1.2rem,2vw,1.6rem);margin-bottom:4px}
+.sci.lg{font-size:clamp(1.4rem,2.5vw,2rem)}
+.s-highlight{background:linear-gradient(135deg,#e8edff,#f1f4ff);border-left:4px solid #3a6dd4;border-radius:8px;padding:clamp(8px,1.2vh,14px);margin:clamp(4px,.8vh,10px) 0}
+.s-quote{font-style:italic;padding:clamp(6px,1vh,12px) clamp(10px,1.5vw,18px);background:#f0f4ff;border-radius:8px;border-left:3px solid #3a6dd4;font-size:clamp(.75rem,1.1vw,.85rem);margin:clamp(4px,.8vh,10px) 0}
+.s-quote.blue{background:#f0f4ff;border-left-color:#3a6dd4}
+.s-contact{display:flex;flex-wrap:wrap;gap:clamp(6px,1vw,14px);margin-top:clamp(4px,.6vh,8px);font-size:clamp(.7rem,1vw,.8rem)}
+.s-contact .clink{color:#0d3880;text-decoration:none;font-weight:500}
+.s-contact .clink:hover{text-decoration:underline}
+.s-badge-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:600;letter-spacing:.5px}
+.badge.blu{background:#0d3880;color:#fff}
+.badge.cya{background:#1a8f9e;color:#fff}
+.badge.gld{background:#b8860b;color:#fff}
+.timeline{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(4px,.8vw,10px);margin-top:clamp(4px,.8vh,10px)}
+.tl{background:#fff;border-radius:10px;padding:clamp(6px,.8vh,12px);box-shadow:0 2px 6px rgba(0,0,0,.06);border-top:3px solid #3a6dd4;font-size:clamp(.7rem,1vw,.82rem)}
+.tl-y{font-weight:700;color:#0d3880;font-size:clamp(.75rem,1.1vw,.88rem);margin-bottom:3px}
+.tl-c h4{margin-bottom:2px;font-size:clamp(.8rem,1.2vw,.9rem)}
+.tl-c p{line-height:1.4}
+.cover{background:linear-gradient(135deg,#0a1a3e,#0d3880,#1a5abf)}
+.cover-bg{position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="30" cy="30" r="2" fill="rgba(255,255,255,.04)"/><circle cx="150" cy="80" r="1.5" fill="rgba(255,255,255,.03)"/><circle cx="80" cy="160" r="2.5" fill="rgba(255,255,255,.03)"/></svg>') repeat;opacity:.5}
+.cover-content{position:relative;z-index:2;text-align:center;max-width:900px;margin:0 auto;padding:4vh 2vw}
+.cover-badge{display:inline-block;border:1px solid rgba(74,125,255,.5);color:#8ab4ff;padding:4px 18px;border-radius:20px;font-size:clamp(.7rem,1.2vw,.85rem);letter-spacing:2px;margin-bottom:clamp(8px,2vh,20px)}
+.cover-content h1{font-size:clamp(2.2rem,5vw,4.5rem);color:#fff;font-weight:800;line-height:1.1;margin-bottom:clamp(4px,1vh,12px)}
+.cover-content h1 .gold{color:#8ab4ff}
+.cover-sub{font-size:clamp(1rem,2vw,1.5rem);color:#8ab4ff;margin-bottom:clamp(6px,1.5vh,16px)}
+.cover-desc{font-size:clamp(.75rem,1.3vw,.95rem);color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:clamp(8px,2vh,20px)}
+.cover-stats{display:flex;justify-content:center;gap:clamp(8px,2vw,30px);flex-wrap:wrap}
+.cstat{text-align:center}
+.cnum{font-size:clamp(1.1rem,2vw,1.8rem);font-weight:700;color:#8ab4ff}
+.cnum.gold{color:#ffd700}
+.clabel{font-size:clamp(.6rem,.9vw,.78rem);color:rgba(255,255,255,.55)}
+.scroll-hint2{position:absolute;bottom:3vh;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.35);font-size:clamp(.6rem,.8vw,.7rem);letter-spacing:1px}
+.scroll-hint2 span{display:inline-block;animation:bounce2 1.5s infinite}
+@keyframes bounce2{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+.end{background:linear-gradient(135deg,#0a1a3e,#0d3880,#1a5abf);text-align:center}
+.end-bg{position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="30" cy="30" r="2" fill="rgba(255,255,255,.04)"/><circle cx="150" cy="80" r="1.5" fill="rgba(255,255,255,.03)"/><circle cx="80" cy="160" r="2.5" fill="rgba(255,255,255,.03)"/></svg>') repeat;opacity:.5}
+.end-content{position:relative;z-index:2;max-width:800px;margin:0 auto;padding:2vh 2vw}
+.end-content h2{font-size:clamp(1.8rem,4vw,3.2rem);color:#fff;margin-bottom:clamp(4px,1vh,10px)}
+.end-sub{font-size:clamp(.8rem,1.3vw,1rem);color:rgba(255,255,255,.6);margin-bottom:clamp(8px,2vh,20px)}
+.end-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(8px,1.5vw,20px);margin:0 auto}
+.ecard{background:rgba(255,255,255,.08);border-radius:10px;padding:clamp(8px,1.5vh,16px);text-align:left}
+.ecard h4{font-size:clamp(.85rem,1.2vw,1rem);color:#8ab4ff;margin-bottom:4px}
+.ecard p{font-size:clamp(.65rem,.9vw,.78rem);color:rgba(255,255,255,.65);line-height:1.6}
+.end-rep{font-size:clamp(1rem,2vw,1.5rem);color:#fff;margin:clamp(8px,2vh,16px) 0}
+.end-foot{font-size:clamp(.55rem,.8vw,.7rem);color:rgba(255,255,255,.3)}
+.s-kpirow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;font-size:clamp(.65rem,.9vw,.78rem)}
+.s-kpirow>div{background:#f0f4ff;padding:4px 8px;border-radius:6px;text-align:center}
+.s-benefits{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:clamp(4px,.6vh,8px) 0;font-size:clamp(.7rem,1vw,.82rem)}
+.s-benefits>div{background:#f0f4ff;padding:6px 10px;border-radius:8px;text-align:center;border-left:3px solid #3a6dd4}
+.s-benefits strong{display:block;color:#0d3880}
+.s-steps{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:clamp(4px,.6vh,8px);font-size:clamp(.6rem,.85vw,.72rem)}
+.s-steps span{background:#f0f4ff;padding:4px 10px;border-radius:6px;color:#0d3880;font-weight:500}
+.s-steps span::after{content:" → ";margin-left:4px;color:#aaa;font-weight:400}
+.s-steps span:last-child::after{content:""}
+.s-timetbl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:clamp(.7rem,1vw,.82rem)}
+.s-timetbl>div{background:#f0f4ff;padding:8px 10px;border-radius:8px;line-height:1.5}
+.slide-nav{position:fixed;bottom:2.5vh;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:clamp(6px,1vw,12px);z-index:100;padding:clamp(4px,.6vh,8px) clamp(10px,1.5vw,18px);background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border-radius:30px}
+.slide-nav button{background:rgba(255,255,255,.15);border:none;color:#fff;width:clamp(28px,3vw,36px);height:clamp(28px,3vw,36px);border-radius:50%;font-size:clamp(.7rem,1.2vw,.9rem);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-weight:700}
+.slide-nav button:hover{background:rgba(255,255,255,.3)}
+.slide-nav .page-info{color:rgba(255,255,255,.7);font-size:clamp(.6rem,.9vw,.75rem);min-width:clamp(40px,6vw,60px);text-align:center;font-weight:400}
+.code-block{background:#1a1a2e;border-radius:8px;padding:clamp(6px,1vh,12px);font-family:'Cascadia Code','Fira Code',monospace;font-size:clamp(.65rem,.9vw,.78rem);color:#a5d8ff;overflow-x:auto;margin:4px 0;line-height:1.6}
+.code-block .cm{color:#666}
+@media(max-width:640px){
+.slide{padding:3vh 4vw}
+.s-grid2,.s-grid3,.s-grid4,.s-grid6,.s-benefits,.s-timetbl,.s-kpirow,.end-grid{grid-template-columns:1fr!important}
+.s-head h2{font-size:clamp(1.1rem,5vw,1.3rem)}
+.s-num{font-size:clamp(1.2rem,6vw,1.6rem);top:1vh;right:3vw}
+.ss{min-width:60px}
+.ss-n{font-size:.9rem}
+.timeline{grid-template-columns:1fr}
+.cover-content{padding:2vh 2vw}
+.slide-nav{gap:4px;padding:4px 8px}
+.slide-nav button{width:28px;height:28px;font-size:.7rem}
+.s-steps{font-size:.65rem}
+}
+</style>
+</head>
+<body>
+
+<section class="slide cover" data-title="封面">
+<div class="cover-bg"></div>
+<div class="cover-content">
+<div class="cover-badge">✦ 2026 ✦</div>
+<h1>OpenCode <span class="gold">LINE Bot</span></h1>
+<p class="cover-sub">LINE Messaging API × AI Coding Agent</p>
+<p class="cover-desc">整合建置報告 — 將 LINE 官方帳號與 OpenCode AI 助理串接<br>支援多種 AI 模型、群組聊天、使用者記憶</p>
+<div class="cover-stats">
+<div class="cstat"><div class="cnum">3</div><div class="clabel">Docker 容器</div></div>
+<div class="cstat"><div class="cnum">12+</div><div class="clabel">AI 模型</div></div>
+<div class="cstat"><div class="cnum">10</div><div class="clabel">LINE 指令</div></div>
+<div class="cstat"><div class="cnum gold">Free</div><div class="clabel">Big Pickle 免費</div></div>
+<div class="cstat"><div class="cnum">Bun</div><div class="clabel">TypeScript</div></div>
+</div>
+</div>
+<div class="scroll-hint2">按 → 鍵下一頁 <span>▶</span></div>
+</section>
+
+<section class="slide" data-title="目錄">
+<div class="s-num">00</div>
+<div class="s-inner">
+<div class="s-head"><h2>目錄</h2><p>CONTENTS</p></div>
+<div class="s-grid3">
+<div class="scard"><div class="sci">🏗️</div><h3>01 系統架構</h3><p>整體架構與資料流說明</p></div>
+<div class="scard"><div class="sci">⚙️</div><h3>02 技術棧</h3><p>使用技術與 Docker 容器</p></div>
+<div class="scard"><div class="sci">📋</div><h3>03 前置準備</h3><p>所需帳號與憑證</p></div>
+<div class="scard"><div class="sci">🚀</div><h3>04 建置步驟</h3><p>從安裝到啟動完整流程</p></div>
+<div class="scard"><div class="sci">📦</div><h3>05 服務說明</h3><p>容器配置與指令</p></div>
+<div class="scard"><div class="sci">🤖</div><h3>06 LINE Bot 功能</h3><p>指令列表與群組聊天</p></div>
+<div class="scard"><div class="sci">🧠</div><h3>07 AI 模型一覽</h3><p>支援模型與費用</p></div>
+<div class="scard"><div class="sci">💡</div><h3>08 操作指南</h3><p>日常使用範例</p></div>
+<div class="scard"><div class="sci">❓</div><h3>09 常見問題</h3><p>FAQ 與除錯</p></div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="系統架構">
+<div class="s-num">01</div>
+<div class="s-inner">
+<div class="s-head"><h2>系統架構</h2><p>Architecture</p></div>
+<div class="s-highlight" style="text-align:center;font-family:monospace;line-height:2.4;font-size:clamp(.8rem,1.3vw,1rem);border-left:none">
+<span style="color:#0d3880;font-weight:700">LINE App</span><br>
+<span style="color:#888">│</span><br>
+<span style="color:#888">▼</span><br>
+<span style="color:#0d3880;font-weight:700">LINE Platform</span> ── POST /webhook<br>
+<span style="color:#888">│</span><br>
+<span style="color:#888">▼</span><br>
+<span style="color:#1a8f9e;font-weight:700">ngrok Tunnel</span> ── localhost:3000 → https://xxx.ngrok-free.app<br>
+<span style="color:#888">│</span><br>
+<span style="color:#888">▼</span><br>
+<span style="color:#0d3880;font-weight:700">line-bot (Bun) :3000</span><br>
+<span style="color:#888">│</span><br>
+<span style="color:#888">▼</span><br>
+<span style="color:#0d3880;font-weight:700">OpenCode Server :4096</span><br>
+<span style="color:#888">│</span><br>
+<span style="color:#888">▼</span><br>
+<span style="color:#1a8f9e;font-weight:700">AI Model</span> ── Claude / GPT / Gemini / Big Pickle<br>
+<span style="color:#999">↕ MCP Tools (optional)</span>
+</div>
+<div class="s-grid2">
+<div class="scard"><div class="sci">📤</div><h3>請求流向</h3><p>LINE → Webhook → ngrok → line-bot → OpenCode → AI Model</p></div>
+<div class="scard"><div class="sci">📥</div><h3>回應流向</h3><p>AI Model → OpenCode → line-bot → replyMessage → LINE App</p></div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="技術棧">
+<div class="s-num">02</div>
+<div class="s-inner">
+<div class="s-head"><h2>技術棧</h2><p>Tech Stack</p></div>
+<div class="s-grid4">
+<div class="scard" style="border-top-color:#0d3880"><div class="sci">🟢</div><h3>LINE Bot</h3><p>Bun + TypeScript<br>LINE SDK v9<br>Port :3000</p></div>
+<div class="scard" style="border-top-color:#1a8f9e"><div class="sci">🔵</div><h3>AI 引擎</h3><p>OpenCode Server<br>Alpine Linux<br>Port :4096</p></div>
+<div class="scard" style="border-top-color:#b8860b"><div class="sci">🐳</div><h3>容器化</h3><p>Docker Compose<br>3 個服務<br>2 個 Volume</p></div>
+<div class="scard" style="border-top-color:#6b2fa0"><div class="sci">🌐</div><h3>Tunnel</h3><p>ngrok 3.x<br>公開 HTTPS<br>免靜態 IP</p></div>
+</div>
+<table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:clamp(.7rem,1vw,.82rem)">
+<tr style="background:#0d3880;color:#fff"><th style="padding:8px 12px;text-align:left">容器</th><th style="padding:8px 12px;text-align:left">基底映像</th><th style="padding:8px 12px;text-align:left">連接埠</th></tr>
+<tr style="background:#fff;border-bottom:1px solid #eee"><td style="padding:8px 12px">opencode-server</td><td style="padding:8px 12px">ghcr.io/anomalyco/opencode:latest</td><td style="padding:8px 12px">:4096</td></tr>
+<tr style="background:#f8f9ff;border-bottom:1px solid #eee"><td style="padding:8px 12px">opencode-line-bot</td><td style="padding:8px 12px">oven/bun:1</td><td style="padding:8px 12px">:3000</td></tr>
+<tr style="background:#fff"><td style="padding:8px 12px">opencode-line-ngrok</td><td style="padding:8px 12px">ngrok/ngrok:latest</td><td style="padding:8px 12px">動態</td></tr>
+</table>
+</div>
+</section>
+
+<section class="slide" data-title="前置準備">
+<div class="s-num">03</div>
+<div class="s-inner">
+<div class="s-head"><h2>前置準備</h2><p>Prerequisites — 需要準備的帳號與憑證</p></div>
+<div class="s-grid2">
+<div class="scard" style="border-top-color:#b8860b">
+<div class="sci">🔑</div><h3>LINE 憑證 <span class="badge blu" style="font-size:.65rem;margin-left:6px">必須</span></h3>
+<ol style="margin-top:6px;margin-left:16px">
+<li>前往 LINE Developers Console</li>
+<li>建立 Provider</li>
+<li>建立 Messaging API Channel</li>
+<li>取得 Channel Secret</li>
+<li>發行 Channel Access Token</li>
+</ol>
+</div>
+<div class="scard" style="border-top-color:#1a8f9e">
+<div class="sci">🤖</div><h3>AI 金鑰 <span class="badge cya" style="font-size:.65rem;margin-left:6px">擇一</span></h3>
+<table style="width:100%;border-collapse:collapse;margin-top:6px;font-size:.85em">
+<tr><th style="text-align:left;padding:4px 6px">服務</th><th style="text-align:left;padding:4px 6px">費用</th><th style="text-align:left;padding:4px 6px">申請</th></tr>
+<tr><td style="padding:4px 6px">Big Pickle</td><td style="padding:4px 6px"><span class="badge" style="background:#065f46;color:#6ee7b7;font-size:.65rem">免費</span></td><td style="padding:4px 6px">內建</td></tr>
+<tr><td style="padding:4px 6px">Claude Haiku</td><td style="padding:4px 6px">💲</td><td style="padding:4px 6px">console.anthropic.com</td></tr>
+<tr><td style="padding:4px 6px">Claude Sonnet</td><td style="padding:4px 6px">💲💲</td><td style="padding:4px 6px">console.anthropic.com</td></tr>
+<tr><td style="padding:4px 6px">GPT-5 Mini</td><td style="padding:4px 6px">💲</td><td style="padding:4px 6px">platform.openai.com</td></tr>
+<tr><td style="padding:4px 6px">Gemini Flash</td><td style="padding:4px 6px">💲</td><td style="padding:4px 6px">aistudio.google.com</td></tr>
+</table>
+</div>
+</div>
+<div class="s-grid2" style="margin-top:8px">
+<div class="scard"><div class="sci">🌐</div><h3>ngrok <span class="badge cya" style="font-size:.65rem;margin-left:6px">建議</span></h3><p>註冊 ngrok.com 取得 Authtoken，讓 Tunnel 網址固定不變，避免每次重啟都要更新 LINE Webhook。</p></div>
+<div class="scard"><div class="sci">💻</div><h3>本機環境</h3><p>✅ Docker Desktop 4.74.0（已安裝）<br>✅ ngrok 3.3.1（已安裝）<br>✅ Git 2.54.0（已安裝）</p></div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="建置步驟">
+<div class="s-num">04</div>
+<div class="s-inner">
+<div class="s-head"><h2>建置步驟</h2><p>Setup — 從安裝到上線 5 步驟</p></div>
+<div class="s-stats" style="margin-bottom:12px">
+<div class="ss" style="border:2px solid #0d3880"><span class="ss-n">Step 1</span><span class="ss-l">設定 .env</span></div>
+<div class="ss"><span class="ss-n">Step 2</span><span class="ss-l">docker compose up</span></div>
+<div class="ss"><span class="ss-n">Step 3</span><span class="ss-l">取得 ngrok URL</span></div>
+<div class="ss"><span class="ss-n">Step 4</span><span class="ss-l">設定 Webhook</span></div>
+<div class="ss"><span class="ss-n">Step 5</span><span class="ss-l">驗證</span></div>
+</div>
+<div class="s-grid2">
+<div class="scard"><h3>📝 設定環境變數</h3><div class="code-block">LINE_CHANNEL_ACCESS_TOKEN=你的Token<br>LINE_CHANNEL_SECRET=你的Secret<br>ANTHROPIC_API_KEY=sk-ant-...<br>NGROK_AUTHTOKEN=你的ngrok key</div></div>
+<div class="scard"><h3>🐳 啟動服務</h3><div class="code-block">docker compose up -d --build</div><p style="margin-top:6px">自動建置 3 個容器：opencode-server、line-bot、ngrok</p></div>
+<div class="scard"><h3>🔗 取得 ngrok 網址</h3><div class="code-block">docker logs opencode-line-ngrok</div><p style="margin-top:6px">看到 <span style="color:#0d3880;font-weight:700">https://xxxx.ngrok-free.app</span></p></div>
+<div class="scard"><h3>⚙️ 設定 Webhook</h3><p>LINE Developers Console → Messaging API</p><div class="code-block">https://你的ngrok網址/webhook</div><p style="margin-top:4px">啟用 Webhook → Verify → Success</p></div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="服務說明">
+<div class="s-num">05</div>
+<div class="s-inner">
+<div class="s-head"><h2>服務說明</h2><p>Services & Docker 操作</p></div>
+<div class="s-grid3">
+<div class="scard" style="border-top-color:#0d3880"><div class="sci">🧠</div><h3>opencode-server</h3><p>OpenCode AI 引擎<br>負責與 AI 模型溝通<br>Port :4096</p></div>
+<div class="scard" style="border-top-color:#1a8f9e"><div class="sci">🤖</div><h3>opencode-line-bot</h3><p>LINE Webhook 處理器<br>解析訊息、呼叫 API<br>Port :3000</p></div>
+<div class="scard" style="border-top-color:#6b2fa0"><div class="sci">🌐</div><h3>opencode-line-ngrok</h3><p>公開隧道<br>本機 → 網際網路<br>動態端口</p></div>
+</div>
+<div class="s-grid2" style="margin-top:10px">
+<div class="scard"><h3>📦 Docker Volumes</h3><table style="width:100%;border-collapse:collapse;font-size:.85em;margin-top:6px">
+<tr><th style="text-align:left;padding:4px 6px">Volume</th><th style="text-align:left;padding:4px 6px">用途</th></tr>
+<tr><td style="padding:4px 6px">opencode-data</td><td style="padding:4px 6px">auth.json（API 金鑰）</td></tr>
+<tr><td style="padding:4px 6px">opencode-state</td><td style="padding:4px 6px">model.json（預設模型）</td></tr>
+</table></div>
+<div class="scard"><h3>📋 常用指令</h3><div class="code-block" style="font-size:.7rem">docker compose up -d --build<br>docker compose down<br>docker logs opencode-line-bot -f<br>docker logs opencode-line-ngrok<br>docker compose restart line-bot</div></div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="LINE Bot 功能">
+<div class="s-num">06</div>
+<div class="s-inner">
+<div class="s-head"><h2>LINE Bot 功能</h2><p>指令列表與特色</p></div>
+<div class="s-grid2">
+<div class="scard" style="border-top-color:#0d3880">
+<h3>📟 LINE 指令</h3>
+<table style="width:100%;border-collapse:collapse;font-size:.85em;margin-top:6px">
+<tr><th style="text-align:left;padding:4px 6px">指令</th><th style="text-align:left;padding:4px 6px">功能</th></tr>
+<tr><td style="padding:4px 6px">/new</td><td style="padding:4px 6px">開始新對話</td></tr>
+<tr><td style="padding:4px 6px">/abort</td><td style="padding:4px 6px">取消進行中請求</td></tr>
+<tr><td style="padding:4px 6px">/sessions</td><td style="padding:4px 6px">查看對話狀態</td></tr>
+<tr><td style="padding:4px 6px">/model</td><td style="padding:4px 6px">查看/切換模型</td></tr>
+<tr><td style="padding:4px 6px">/model sonnet</td><td style="padding:4px 6px">切換到 Sonnet</td></tr>
+<tr><td style="padding:4px 6px">/about</td><td style="padding:4px 6px">Bot 自我介紹</td></tr>
+<tr><td style="padding:4px 6px">/help</td><td style="padding:4px 6px">顯示所有指令</td></tr>
+</table>
+</div>
+<div class="scard" style="border-top-color:#1a8f9e">
+<h3>✨ 特色功能</h3>
+<div style="margin-top:6px">
+<p><strong>👥 群組聊天</strong><br>同群組共用 session，AI 自動判斷是否回應（SKIP 機制），不需 @bot</p>
+<p style="margin-top:10px"><strong>🧠 使用者上下文</strong><br>每次 prompt 自動包含：LINE 顯示名稱、訊息計數、曼谷時區時間、引用回覆</p>
+<p style="margin-top:10px"><strong>💬 回覆機制</strong><br>replyMessage 優先（免費無限）→ pushMessage 備援（每月 300 則）</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="AI 模型">
+<div class="s-num">07</div>
+<div class="s-inner">
+<div class="s-head"><h2>AI 模型一覽</h2><p>支援 12+ 模型，可隨時切換</p></div>
+<div class="s-grid2">
+<div class="scard" style="border-top-color:#065f46">
+<div class="sci">🆓</div><h3>免費方案</h3>
+<table style="width:100%;border-collapse:collapse;font-size:.85em;margin-top:6px">
+<tr><th style="text-align:left;padding:4px 6px">指令</th><th style="text-align:left;padding:4px 6px">模型</th><th style="text-align:left;padding:4px 6px">供應商</th></tr>
+<tr><td style="padding:4px 6px">/model pickle</td><td style="padding:4px 6px">Big Pickle</td><td style="padding:4px 6px">opencode</td></tr>
+</table>
+</div>
+<div class="scard" style="border-top-color:#b8860b">
+<div class="sci">💲</div><h3>付費方案</h3>
+<table style="width:100%;border-collapse:collapse;font-size:.85em;margin-top:6px">
+<tr><th style="text-align:left;padding:4px 6px">指令</th><th style="text-align:left;padding:4px 6px">模型</th><th style="text-align:left;padding:4px 6px">供應商</th></tr>
+<tr><td style="padding:4px 6px">/model haiku</td><td style="padding:4px 6px">Claude Haiku 4.5</td><td style="padding:4px 6px">anthropic</td></tr>
+<tr><td style="padding:4px 6px">/model sonnet</td><td style="padding:4px 6px">Claude Sonnet 4.6</td><td style="padding:4px 6px">anthropic</td></tr>
+<tr><td style="padding:4px 6px">/model opus</td><td style="padding:4px 6px">Claude Opus 4.6</td><td style="padding:4px 6px">anthropic</td></tr>
+<tr><td style="padding:4px 6px">/model deepseek</td><td style="padding:4px 6px">DeepSeek Chat</td><td style="padding:4px 6px">deepseek</td></tr>
+<tr><td style="padding:4px 6px">/model gpt5mini</td><td style="padding:4px 6px">GPT-5 Mini</td><td style="padding:4px 6px">openai</td></tr>
+<tr><td style="padding:4px 6px">/model gpt5</td><td style="padding:4px 6px">GPT-5.2</td><td style="padding:4px 6px">openai</td></tr>
+<tr><td style="padding:4px 6px">/model geminiflash</td><td style="padding:4px 6px">Gemini 3 Flash</td><td style="padding:4px 6px">google</td></tr>
+<tr><td style="padding:4px 6px">/model gemini</td><td style="padding:4px 6px">Gemini 3 Pro</td><td style="padding:4px 6px">google</td></tr>
+</table>
+</div>
+</div>
+<p style="text-align:center;margin-top:8px;color:#888;font-size:.85rem">💡 預設：Big Pickle（免費），可隨時用 <span style="background:#f0f4ff;padding:2px 8px;border-radius:4px;font-family:monospace">/model 名稱</span> 切換</p>
+</div>
+</section>
+
+<section class="slide" data-title="操作指南">
+<div class="s-num">08</div>
+<div class="s-inner">
+<div class="s-head"><h2>操作指南</h2><p>Usage — 日常使用範例</p></div>
+<div class="s-grid2">
+<div class="scard"><h3>💬 一般對話</h3><div class="code-block"><span class="cm">// 你</span><br>幫我寫一個 Python 計算機<br><br><span class="cm">// Bot</span><br>好的，這是簡單的計算機程式...</div></div>
+<div class="scard"><h3>🔄 切換模型</h3><div class="code-block"><span class="cm">// 你</span><br>/model sonnet<br><br><span class="cm">// Bot</span><br>已切換到 Claude Sonnet 4.6</div></div>
+<div class="scard"><h3>🆕 新對話</h3><div class="code-block"><span class="cm">// 你</span><br>/new<br><br><span class="cm">// Bot</span><br>已開始新對話！</div></div>
+<div class="scard"><h3>📊 查看狀態</h3><div class="code-block"><span class="cm">// 你</span><br>/sessions<br><br><span class="cm">// Bot</span><br>目前有 3 個 active session</div></div>
+</div>
+<div class="s-grid2" style="margin-top:8px">
+<div class="scard"><h3>📋 查看日誌</h3><div class="code-block" style="font-size:.65rem">docker logs opencode-line-bot --tail 30 -f<br>docker logs opencode-server --tail 30 -f</div></div>
+<div class="scard"><h3>🔄 重新啟動</h3><div class="code-block" style="font-size:.65rem">docker compose restart line-bot<br>docker compose up -d --build</div></div>
+</div>
+</div>
+</section>
+
+<section class="slide" data-title="常見問題">
+<div class="s-num">09</div>
+<div class="s-inner">
+<div class="s-head"><h2>常見問題</h2><p>FAQ</p></div>
+<div class="s-grid2">
+<div class="scard" style="border-top-color:#b8860b"><h3>❓ 收不到 Bot 回覆？</h3><p>1. 檢查 ngrok：<span class="code-block" style="display:inline;padding:2px 6px;font-size:.75rem">docker logs opencode-line-ngrok</span><br>2. 確認 LINE Webhook URL 是否正確<br>3. 檢查 Bot 日誌是否有錯誤<br>4. 確認 .env 金鑰正確</p></div>
+<div class="scard" style="border-top-color:#1a8f9e"><h3>❓ ngrok URL 變了？</h3><p>每次 ngrok 重啟 URL 都會變。建議註冊 ngrok 帳號並設定 Authtoken，網址就會固定。變更後需更新 LINE Webhook。</p></div>
+<div class="scard" style="border-top-color:#6b2fa0"><h3>❓ Docker 無法啟動？</h3><p><span class="code-block" style="display:inline;padding:2px 6px;font-size:.75rem">docker info</span> 檢查 Docker 狀態。<br><span class="code-block" style="display:inline;padding:2px 6px;font-size:.75rem">docker compose down; docker compose up -d --build</span> 重新啟動。</p></div>
+<div class="scard" style="border-top-color:#0d3880"><h3>❓ 重啟後對話不見？</h3><p>Session 儲存在記憶體中，重啟後會自動建立新 session，傳送訊息即可繼續使用，不需任何設定。</p></div>
+</div>
+</div>
+</section>
+
+<section class="slide end" data-title="結尾">
+<div class="end-bg"></div>
+<div class="end-content">
+<h2>Thanks</h2>
+<p class="end-sub">OpenCode LINE Bot — 整合建置報告</p>
+<div class="end-grid">
+<div class="ecard"><h4>📂 GitHub 原始碼</h4><p>github.com/waiaoinfo-create/opencode-line<br>Branch: main-setup</p></div>
+<div class="ecard"><h4>🌐 OpenCode 官網</h4><p>opencode.ai<br>開源 AI 程式碼助理</p></div>
+<div class="ecard"><h4>📖 原始專案</h4><p>github.com/monthop-gmail/opencode-line<br>LINE × OpenCode 整合</p></div>
+</div>
+<div class="end-rep">Generated by <strong>OpenCode AI</strong></div>
+<p class="end-foot">© 2026 · waiaoinfo-create</p>
+</div>
+</section>
+
+<div class="slide-nav">
+<button onclick="prevSlide()">&#9664;</button>
+<span class="page-info" id="pageInfo">1 / 10</span>
+<button onclick="nextSlide()">&#9654;</button>
+</div>
+
+<script>
+var T = ['封面','目錄','系統架構','技術棧','前置準備','建置步驟','服務說明','LINE Bot 功能','AI 模型','操作指南','常見問題','結尾'];
+var i=0,N=T.length;
+function show(n){document.querySelectorAll('.slide').forEach(function(s,i){s.classList.toggle('active',i===n)});document.getElementById('pageInfo').textContent=(n+1)+' / '+N;i=n}
+function nextSlide(){show((i+1)%N)}
+function prevSlide(){show((i-1+N)%N)}
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight')nextSlide();if(e.key==='ArrowLeft')prevSlide()});
+show(0);
+</script>
+</body>
+</html>
