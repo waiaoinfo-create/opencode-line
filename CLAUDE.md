@@ -125,6 +125,21 @@ Referenced in `/meditation` command and web `/about` page. Meditation DApp for e
 - After container recreate, sessions are lost (in-memory Map) — users just need to send a new message to create a fresh session.
 - LINE replyToken expires quickly — if bot takes too long to respond, replyMessage will fail and fall back to pushMessage (uses quota).
 
+## Skill: GitHub Pages Slide Presentation
+
+本專案內附 `SKILL_GITHUB_PAGES.md` — 這是一個可攜式技能檔案，可用於任何 AI 工具。
+
+### 使用方式
+- **在本專案**: CLAUDE.md 已自動載入此技能邏輯
+- **在其他 AI 工具**（Claude Code、ChatGPT、Cursor 等）: 直接上傳 `SKILL_GITHUB_PAGES.md` 或貼入對話，告訴 AI「請遵循此 skill」
+
+### Skill 內容
+當使用者要求「上傳 GitHub」「開分支」「做報告/簡報/報表」時：
+1. 建立單頁 HTML 幻燈片簡報（方向鍵翻頁）
+2. 初始化 Git + 開分支
+3. 建立 GitHub repo + 啟用 Pages
+4. 給出 `https://{owner}.github.io/{repo}/` 連結
+
 ## User Preferences
 
 - **報告/簡報格式**: 使用者要的是 **GitHub Pages 連結 + 方向鍵翻頁的 slide 簡報**（如 reveal.js 風格），不是 Markdown 或 HTML 檔案。直接給 `https://waiaoinfo-create.github.io/{repo}/` 這樣的連結，不要給檔案路徑。
